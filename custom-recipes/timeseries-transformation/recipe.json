@@ -1,127 +1,265 @@
-// This file is the descriptor for the Custom code recipe timeseries-transformation
 {
-    // Meta data for display purposes
     "meta": {
-        // label: name of the recipe as displayed, should be short
         "label": "Timeseries transformation",
-        // description: longer string to help end users understand what this recipe does
-        "description": "",
-        // icon: must be one of the FontAwesome 3.2.1 icons, complete list here at https://fontawesome.com/v3.2.1/icons/
-        "icon": "icon-puzzle-piece"
+        "description": "Apply transformations to your time series, such as trend-seasonal decomposition.",
+        "icon": "icon-wrench"
     },
 
     "kind": "PYTHON",
-    
-
-    // Inputs and outputs are defined by roles. In the recipe's I/O tab, the user can associate one
-    // or more dataset to each input and output role.
-
-    // The "arity" field indicates whether the user can associate several datasets to the role ('NARY')
-    // or at most one ('UNARY'). The "required" field indicates whether the user is allowed to
-    // associate no dataset with the role.
+    "selectableFromDataset": "input_dataset",
 
     "inputRoles": [
         {
-            "name": "input_A_role",
-            "label": "input A displayed name",
-            "description": "what input A means",
+            "name": "input_dataset",
+            "label": "Historical dataset",
+            "description": "A dataset which contains time series data",
             "arity": "UNARY",
             "required": true,
-            "acceptsDataset": true
-        },
-        {
-            "name": "input_B_role",
-            "label": "input B displayed name",
-            "description": "what input B means",
-            "arity": "NARY",
-            "required": false,
-            "acceptsDataset": true
-            // ,'mustBeSQL': true
-            // ,'mustBeStrictlyType':'HDFS'
+            "acceptsDataset": true,
+            "acceptsManagedFolder": false
         }
-        // ...
     ],
 
     "outputRoles": [
         {
-            "name": "main_output",
-            "label": "main output displayed name",
-            "description": "what main output means",
+            "name": "transformation_dataset",
+            "label": "Transformation results",
+            "description": "Dataset resulting from the time series transformation",
             "arity": "UNARY",
-            "required": false,
-            "acceptsDataset": true
-        },
-        {
-            "name": "errors_output",
-            "label": "errors output displayed name",
-            "description": "what errors output means",
-            "arity": "UNARY",
-            "required": false,
-            "acceptsDataset": true
+            "required": true,
+            "acceptsDataset": true,
+            "acceptsManagedFolder": false
         }
-        // ...
     ],
-
-    /* The field "params" holds a list of all the params
-       for wich the user will be prompted for values in the Settings tab of the recipe.
-
-       The available parameter types include:
-       STRING, STRINGS, INT, DOUBLE, BOOLEAN, SELECT, MULTISELECT, MAP, TEXTAREA, PRESET, COLUMN, COLUMNS
-
-       For the full list and for more details, see the documentation: https://doc.dataiku.com/dss/latest/plugins/reference/params.html
-    */
-
     "params": [
         {
-            "name": "parameter1",
-            "label": "User-readable label",
-            "type": "STRING",
-            "description": "Some documentation for parameter1",
-            "mandatory": true
+            "type": "SEPARATOR",
+            "name": "separator_transformation_type",
+            "label": "Transformation type"
         },
         {
-            "name": "parameter2",
-            "type": "INT",
-            "defaultValue": 42
-            /* Note that standard json parsing will return it as a double in Python (instead of an int), so you need to write
-               int(get_recipe_config()['parameter2'])
-            */
-        },
-
-        // A "SELECT" parameter is a multi-choice selector. Choices are specified using the selectChoice field
-        {
-            "name": "parameter3",
+            "name": "transformation_type",
+            "label": "Select a transformation",
             "type": "SELECT",
             "selectChoices": [
                 {
-                    "value": "val_x",
-                    "label": "display name for val_x"
+                    "value": "seasonal_decomposition",
+                    "label": "Seasonal decomposition"
+                }
+            ],
+            "defaultValue":"seasonal_decomposition"
+        },
+        {
+            "name": "time_decomposition_method",
+            "label": "Select a decomposition method",
+            "type": "SELECT",
+            "visibilityCondition" : "model.transformation_type == 'seasonal_decomposition'",
+            "selectChoices": [
+                {
+                    "value": "STL",
+                    "label": "STL, Seasonal-Trend decomposition using LOESS"
                 },
                 {
-                    "value": "val_y",
-                    "label": "display name for val_y"
+                    "value": "classical",
+                    "label": "Classical decomposition"
                 }
-            ]
+            ],
+            "defaultValue":"STL"
+        },
+        {
+            "type": "SEPARATOR",
+            "name": "separator_input",
+            "label": "Input parameters"
+        },
+        {
+            "name": "time_column",
+            "label": "Time column",
+            "allowedColumnTypes": [
+                "date"
+            ],
+            "type": "COLUMN",
+            "description": "Must be a parsed date",
+            "columnRole": "input_dataset",
+            "mandatory": true
+        },
+        {
+            "name": "target_column",
+            "label": "Target column",
+            "type": "COLUMN",
+            "allowedColumnTypes": [
+                "tinyint",
+                "smallint",
+                "int",
+                "bigint",
+                "float",
+                "double"
+            ],
+            "columnRole": "input_dataset",
+            "mandatory": true
+        },
+        {
+            "name": "frequency_unit",
+            "label": "Frequency",
+            "type": "SELECT",
+            "description": "Frequency of your historical data",
+            "mandatory": true,
+            "selectChoices": [
+                {
+                    "value": "min",
+                    "label": "Minute"
+                },
+                {
+                    "value": "H",
+                    "label": "Hour"
+                },
+                {
+                    "value": "D",
+                    "label": "Day"
+                },
+                {
+                    "value": "B",
+                    "label": "Business Day (Mon-Fri)"
+                },
+                {
+                    "value": "W",
+                    "label": "Week"
+                },
+                {
+                    "value": "M",
+                    "label": "Month"
+                },
+                {
+                    "value": "3M",
+                    "label": "Quarter"
+                },
+                {
+                    "value": "6M",
+                    "label": "Semester"
+                },
+                {
+                    "value": "12M",
+                    "label": "Year"
+                }
+            ],
+            "defaultValue": "D"
         },
 
-        // A 'COLUMN' parameter is a string, whose value is a column name from an input schema.
-        // To specify the input schema whose column names are used, use the "columnRole" field like below.
-        // The column names will come from the schema of the first dataset associated to that role.
         {
-            "name": "parameter4",
-            "type": "COLUMN",
-            "columnRole": "input_B_role"
+            "type": "SEPARATOR",
+            "name": "stl_parameters",
+            "label": "STL parameters",
+            "description": "Seasonal-Trend decomposition using Loess",
+            "visibilityCondition" : "model.time_decomposition_method == 'STL'"
+        },
+        {
+            "type": "SELECT",
+            "name": "model_stl",
+            "label": "Model type",
+            "selectChoices": [
+                {
+                    "value": "additive",
+                    "label": "Additive"
+                },
+                {
+                    "value": "multiplicative",
+                    "label": "Multiplicative"
+                }],
+            "defaultValue": "additive",
+            "description": " If the magnitude of the seasonality varies over time, then the series is multiplicative. Otherwise, the series is additive.",
+            "visibilityCondition" : "model.time_decomposition_method == 'STL'"
+        },
+        {
+            "name": "seasonal_stl",
+            "label": "Seasonal smoother",
+            "type": "INT",
+            "description": "Odd integer. Number of consecutive timesteps (years, weeks..) to be used in estimating each value in the seasonal component. It controls how rapidly the seasonal component can change.",
+            "defaultValue": 13,
+            "minI": 7,
+            "visibilityCondition" : "model.time_decomposition_method == 'STL'"
+        },
+        {
+            "name": "expert_stl",
+            "label": "Expert mode",
+            "type": "BOOLEAN",
+            "defaultValue": false,
+            "visibilityCondition" : "model.time_decomposition_method == 'STL'"
+        },
+        {
+            "name": "robust_stl",
+            "label": "Robust to outliers",
+            "type": "BOOLEAN",
+            "defaultValue": false,
+            "mandatory": false,
+            "visibilityCondition" : "model.time_decomposition_method == 'STL' && model.expert_stl",
+            "description": "If selected, the estimation will re-weight data, allowing the model to tolerate larger errors."
+        },
+        {
+            "type": "SEPARATOR",
+            "name": "separator_degrees",
+            "label": "Fitting method in Loess",
+            "visibilityCondition" : "model.time_decomposition_method == 'STL' && model.expert_stl"
+        },
+        {
+            "name": "seasonal_degree_stl",
+            "label": "Local fitting method for seasonal extraction",
+            "type": "SELECT",
+            "selectChoices": [
+                {
+                    "value": "0",
+                    "label": "Constant (weighted moving averages)"
+                },
+                {
+                    "value": "1",
+                    "label": "Linear"
+                }],
+            "defaultValue": "1",
+            "mandatory": false,
+            "description": "Degree of the polynomial used by seasonal Loess",
+            "visibilityCondition" : "model.time_decomposition_method == 'STL' && model.expert_stl"
+        },
+        {
+            "name": "trend_degree_stl",
+            "label": "Local fitting method for trend extraction",
+            "type": "SELECT",
+            "selectChoices": [
+                {
+                    "value": "0",
+                    "label": "Constant (weighted moving averages)"
+                },
+                {
+                    "value": "1",
+                    "label": "Linear"
+                }],
+            "defaultValue": "1",
+            "mandatory": false,
+            "description": "Degree of the polynomial used by trend Loess",
+            "visibilityCondition" : "model.time_decomposition_method == 'STL' && model.expert_stl"
+        },
+        {
+            "name": "lowpass_degree_stl",
+            "label": "Local fitting method for the low pass filter",
+            "type": "SELECT",
+            "selectChoices": [
+                {
+                    "value": "0",
+                    "label": "Constant (weighted moving averages)"
+                },
+                {
+                    "value": "1",
+                    "label": "Linear"
+                }],
+            "defaultValue": "1",
+            "mandatory": false,
+            "description": "Degree of the polynomial used by low pass Loess",
+            "visibilityCondition" : "model.time_decomposition_method == 'STL' && model.expert_stl"
+        },
+        {
+            "type": "SEPARATOR",
+            "name": "separator_speedup",
+            "label": "Performance",
+            "description": "Options to speed up computation. It may impair the fit of the model.",
+            "visibilityCondition" : "model.time_decomposition_method == 'STL' && model.expert_stl"
         }
-
-        // The 'COLUMNS' type works in the same way, except that it is a list of strings.
     ],
-
-    // The field "resourceKeys" holds a list of keys that allows to limit the number
-    // of concurrent executions and activities triggered by this recipe.
-    //
-    // Administrators can configure the limit per resource key in the Administration > Settings > Flow build
-    // screen.
-
     "resourceKeys": []
-
 }

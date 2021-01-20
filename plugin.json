@@ -3,14 +3,16 @@
     "version": "0.0.1",
     "meta": {
         "label": "Digital signal processing",
-        "category": "Your category (optional)",
-        "description": "Your description (keep it short and simple)",
-        "author": "Organization (firstName LASTNAME)",
-        "icon": "icon-font-awesome-3.2.1",
+        "category": "Time Series",
+        "description": "This plugin provides digital processing tools for time series decomposition and transformation.",
+        "author": "Dataiku (Marine SOBAS)",
+        "icon": "icon-signal",
         "licenseInfo": "Apache Software License",
         "url": "https://www.dataiku.com/product/plugins/digital-signal-processing/",
         "tags": [
-            "myTag"
+            "Time Series",
+            "Audio",
+            "Data Preparation"
         ],
         "supportLevel": "NOT_SUPPORTED"
     }
