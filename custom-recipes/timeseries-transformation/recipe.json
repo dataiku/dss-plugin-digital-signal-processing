@@ -47,7 +47,8 @@
                     "label": "Seasonal decomposition"
                 }
             ],
-            "defaultValue":"seasonal_decomposition"
+            "defaultValue":"seasonal_decomposition",
+            "mandatory": true
         },
         {
             "name": "time_decomposition_method",
