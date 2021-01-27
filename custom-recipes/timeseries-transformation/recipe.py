@@ -4,6 +4,7 @@ import pandas as pd
 from statsmodels.tsa.seasonal import STL
 
 from dku_config.transformation_config import TransformationConfig
+from timeseries_transformation.preparation import TimeseriesPreparator
 
 #SETTINGS
 input_dataset_name = get_input_names_for_role("input_dataset")[0]
@@ -14,6 +15,14 @@ transformation_dataset = dataiku.Dataset(transformation_dataset_name)
 
 config = get_recipe_config()
 dku_config = TransformationConfig(config)
+
+timeseries_preparator = TimeseriesPreparator(
+    time_column_name=dku_config.time_column,
+    frequency=dku_config.frequency,
+    target_columns_names=dku_config.target_column,
+    timeseries_identifiers_names=dku_config.timeseries_identifiers
+)
+
 time_column = dku_config.time_column
 target_column = dku_config.target_column
 seasonal = dku_config.seasonal

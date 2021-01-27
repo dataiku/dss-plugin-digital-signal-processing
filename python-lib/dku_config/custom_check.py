@@ -112,7 +112,8 @@ class CustomCheck:
         return value is not None
 
     def _in(self, value: Any) -> bool:
-        """Checks whether the value is in the iterable given in "op" attribute
+        """Checks whether the value is in the iterable given in "op" attribute. If the value and the operator are lists,
+        it checks if the value is a subset of the operator.
 
         Args:
             value(Any): Value to test
@@ -120,7 +121,10 @@ class CustomCheck:
         Returns:
             bool: Whether the check has succeed
         """
-        return value in self.op
+        if isinstance(value, list) and isinstance(self.op, list):
+            return all(x in self.op for x in value)
+        else:
+            return value in self.op
 
     def _not_in(self, value: Any) -> bool:
         """Checks whether the value is not in the iterable given in "op" attribute

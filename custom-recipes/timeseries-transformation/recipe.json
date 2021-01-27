@@ -84,21 +84,6 @@
             "mandatory": true
         },
         {
-            "name": "target_column",
-            "label": "Target column",
-            "type": "COLUMN",
-            "allowedColumnTypes": [
-                "tinyint",
-                "smallint",
-                "int",
-                "bigint",
-                "float",
-                "double"
-            ],
-            "columnRole": "input_dataset",
-            "mandatory": true
-        },
-        {
             "name": "frequency_unit",
             "label": "Frequency",
             "type": "SELECT",
@@ -116,10 +101,6 @@
                 {
                     "value": "D",
                     "label": "Day"
-                },
-                {
-                    "value": "B",
-                    "label": "Business Day (Mon-Fri)"
                 },
                 {
                     "value": "W",
@@ -144,7 +125,102 @@
             ],
             "defaultValue": "D"
         },
-
+        {
+            "name": "frequency_end_of_week",
+            "label": "End of week day",
+            "type": "SELECT",
+            "mandatory": false,
+            "defaultValue": "SUN",
+            "visibilityCondition": "model.frequency_unit == 'W'",
+            "selectChoices": [
+                {
+                    "value": "SUN",
+                    "label": "Sunday"
+                },
+                {
+                    "value": "MON",
+                    "label": "Monday"
+                },
+                {
+                    "value": "TUE",
+                    "label": "Tuesday"
+                },
+                {
+                    "value": "WED",
+                    "label": "Wednesday"
+                },
+                {
+                    "value": "THU",
+                    "label": "Thursday"
+                },
+                {
+                    "value": "FRI",
+                    "label": "Friday"
+                },
+                {
+                    "value": "SAT",
+                    "label": "Saturday"
+                }
+            ]
+        },
+        {
+            "name": "frequency_step_hours",
+            "label": "Number of hours",
+            "type": "INT",
+            "defaultValue": 1,
+            "mandatory": false,
+            "minI": 1,
+            "visibilityCondition": "model.frequency_unit == 'H'"
+        },
+        {
+            "name": "frequency_step_minutes",
+            "label": "Number of minutes",
+            "type": "INT",
+            "defaultValue": 1,
+            "mandatory": false,
+            "minI": 1,
+            "visibilityCondition": "model.frequency_unit == 'min'"
+        },
+        {
+            "name": "target_columns",
+            "label": "Target column(s)",
+            "type": "COLUMNS",
+            "allowedColumnTypes": [
+                "tinyint",
+                "smallint",
+                "int",
+                "bigint",
+                "float",
+                "double"
+            ],
+            "columnRole": "input_dataset",
+            "mandatory": true
+        },
+         {
+            "name": "additional_columns",
+            "label": "Long format",
+            "description": "If multiple time series are stored in the same column",
+            "type": "BOOLEAN",
+            "defaultValue": false,
+            "mandatory": true
+        },
+        {
+            "name": "timeseries_identifiers",
+            "label": "Time series identifiers",
+            "description": "Columns that identify the multiple time series - mandatory for long format",
+            "type": "COLUMNS",
+            "allowedColumnTypes": [
+                "tinyint",
+                "smallint",
+                "int",
+                "bigint",
+                "string",
+                "boolean"
+            ],
+            "columnRole": "input_dataset",
+            "mandatory": false,
+            "visibilityCondition": "model.additional_columns"
+        },
         {
             "type": "SEPARATOR",
             "name": "stl_parameters",
