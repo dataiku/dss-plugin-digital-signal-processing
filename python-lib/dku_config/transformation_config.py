@@ -30,7 +30,7 @@ class TransformationConfig(DkuConfig):
                     "type": "in",
                     "op": ["STL", "classical"]
                 }],
-                required=True
+                required=True # change it to False and add a specific condition
             )
             if self.time_decomposition_method == "STL":
                 self._load_STL_parameters(config)

@@ -1,48 +1,28 @@
-import dataiku
-from dataiku.customrecipe import *
-import pandas as pd
-from statsmodels.tsa.seasonal import STL
+from dataiku.customrecipe import get_recipe_config
 
 from dku_config.transformation_config import TransformationConfig
 from timeseries_transformation.preparation import TimeseriesPreparator
-
-#SETTINGS
-input_dataset_name = get_input_names_for_role("input_dataset")[0]
-input_dataset = dataiku.Dataset(input_dataset_name)
-
-transformation_dataset_name = get_output_names_for_role("transformation_dataset")[0]
-transformation_dataset = dataiku.Dataset(transformation_dataset_name)
+from timeseries_transformation.decomposition import TimeseriesDecomposition
 
 config = get_recipe_config()
 dku_config = TransformationConfig(config)
+input_df = dku_config.input_dataset.get_dataframe()
 
 timeseries_preparator = TimeseriesPreparator(
     time_column_name=dku_config.time_column,
     frequency=dku_config.frequency,
-    target_columns_names=dku_config.target_column,
+    target_columns_names=dku_config.target_columns,
     timeseries_identifiers_names=dku_config.timeseries_identifiers
 )
 
-time_column = dku_config.time_column
-target_column = dku_config.target_column
-seasonal = dku_config.seasonal
-frequency = dku_config.frequency
+df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
 
-#RUN
-df = input_dataset.get_dataframe()
-start_date = df[time_column].min()
+if dku_config.transformation_type == "seasonal_decomposition":
+    decomposition = TimeseriesDecomposition(dku_config)
+    transformed_df = decomposition.fit(df_prepared)
+else:
+    transformed_df = input_df
 
-values = df[target_column].values
-ts = pd.Series(values, index=pd.date_range(start_date, periods=len(values), freq=frequency), name = 'target')
-
-parameters = {"endog":ts,"seasonal":seasonal}
-
-stl = STL(**parameters)
-results = stl.fit()
-
-df["{}_trend_0".format(target_column)] = results.trend.values
-df["{}_seasonal_0".format(target_column)] = results.seasonal.values
-df["{}_residuals_0".format(target_column)] = results.resid.values
 
 # Recipe outputs
-transformation_dataset.write_with_schema(df)
+transformation_df = dku_config.output_dataset.write_with_schema(transformed_df)
