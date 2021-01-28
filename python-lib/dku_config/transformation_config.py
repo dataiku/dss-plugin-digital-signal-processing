@@ -1,3 +1,5 @@
+import numpy as np
+
 import dataiku
 from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
 
@@ -82,7 +84,11 @@ class TransformationConfig(DkuConfig):
         self.add_param(
             name="target_columns",
             value=config.get("target_columns"),
-            checks=[{"type": "is_type",
+            checks=[{"type": "custom",
+                     "cond": (config.get("target_columns") != []),
+                     "err_msg": "This field is required"
+                     },
+                    {"type": "is_type",
                      "op": list
                      },
                     {"type": "in",
@@ -148,15 +154,44 @@ class TransformationConfig(DkuConfig):
                     "op":int
                 },
                 {
-                    "type":"sup_eq",
-                    "op":7
+                    "type": "sup_eq",
+                    "op": 7
 
                 },
                 {
-                    "type":"custom",
+                    "type": "custom",
                     "cond": seasonal % 2 == 1,
                     "err_msg": "The seasonal smoother should be an odd integer."
                 }]
+        )
+
+        model_stl = config.get("model_stl")
+
+        valid_model = True
+        negative_column = ""
+        input_dataset = self.input_dataset.get_dataframe()
+        if model_stl == "multiplicative":
+            for target_colum in self.target_columns :
+                target_values = input_dataset[target_colum].values
+                if np.any(target_values <= 0):
+                    valid_model = False
+                    negative_column = target_colum
+                    break
+
+        self.add_param(
+            name="model_stl",
+            value=config.get("model_stl"),
+            checks=[
+                {
+                    "type": "in",
+                    "op": ["additive", "multiplicative"]
+                },
+                {
+                    "type": "custom",
+                    "cond": valid_model,
+                    "err_msg": f"The targeted column {negative_column} contains negative values, yet, a multiplicative STL model only works with positive time series. You may choose an additive STL model or a classic decomposition method instead. "
+                }
+            ],
         )
 
 
