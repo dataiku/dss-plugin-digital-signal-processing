@@ -1,13 +1,12 @@
+from abc import ABC, abstractmethod
 import itertools
-import numpy as np
 import pandas as pd
-from statsmodels.tsa.seasonal import STL
 
 
-class TimeseriesDecomposition():
+class TimeseriesDecomposition(ABC):
     def __init__(self, recipe_config):
         self.config = recipe_config
-        self.parameters = format_parameters(recipe_config)
+        self.parameters = {}
 
     def fit(self, df):
         if self.config.long_format:
@@ -32,23 +31,9 @@ class TimeseriesDecomposition():
     def _prepare_ts(self,target_values,time_index):
         return pd.Series(target_values, index=time_index)
 
+    @abstractmethod
     def _decompose(self, ts):
-        if self.config.time_decomposition_method == "STL":
-            if self.config.model_stl == "multiplicative":
-                ts = np.log(ts)
-                self.parameters["endog"] = ts
-                stl = STL(**self.parameters)
-                results = stl.fit()
-                results._trend = np.exp(results.trend)
-                results._seasonal = np.exp(results.seasonal)
-                results._resid = np.exp(results.resid)
-            elif self.config.model_stl == "additive":
-                self.parameters["endog"] = ts
-                stl = STL(**self.parameters)
-                results = stl.fit()
-        else:
-            pass
-        return results
+        pass
 
     def _write_decomposition(self, decomposition, df, target_column):
         df["{}_trend_0".format(target_column)] = decomposition.trend.values
@@ -68,12 +53,4 @@ class TimeseriesDecomposition():
             ts_indexes.append(ts_df.index)
         return ts_indexes
 
-
-def format_parameters(config):
-    parameters = {}
-    if config.time_decomposition_method == "STL":
-        parameters["seasonal"] = config.seasonal
-    elif config.time_decomposition_method == "classical":
-        pass
-    return parameters
 

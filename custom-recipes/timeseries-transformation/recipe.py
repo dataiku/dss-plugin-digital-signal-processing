@@ -2,7 +2,7 @@ from dataiku.customrecipe import get_recipe_config
 
 from dku_config.transformation_config import TransformationConfig
 from timeseries_transformation.preparation import TimeseriesPreparator
-from timeseries_transformation.decomposition import TimeseriesDecomposition
+from timeseries_transformation.stl_decomposition import STLDecomposition
 
 config = get_recipe_config()
 dku_config = TransformationConfig(config)
@@ -18,8 +18,11 @@ timeseries_preparator = TimeseriesPreparator(
 df_prepared = timeseries_preparator.prepare_timeseries_dataframe(input_df)
 
 if dku_config.transformation_type == "seasonal_decomposition":
-    decomposition = TimeseriesDecomposition(dku_config)
-    transformed_df = decomposition.fit(df_prepared)
+    if dku_config.time_decomposition_method == "STL":
+        decomposition = STLDecomposition(dku_config)
+        transformed_df = decomposition.fit(df_prepared)
+    elif dku_config.time_decomposition_method == "classical":
+        transformed_df = input_df
 else:
     transformed_df = input_df
 

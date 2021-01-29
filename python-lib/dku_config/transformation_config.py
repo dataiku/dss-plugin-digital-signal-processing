@@ -32,7 +32,7 @@ class TransformationConfig(DkuConfig):
                     "type": "in",
                     "op": ["STL", "classical"]
                 }],
-                required=True # change it to False and add a specific condition
+                required=True  # change it to False and add a specific condition
             )
             if self.time_decomposition_method == "STL":
                 self._load_STL_parameters(config)
@@ -112,19 +112,17 @@ class TransformationConfig(DkuConfig):
         )
 
         long_format = config.get("additional_columns", False)
-        if long_format:
-            is_long_format_valid = True
-            if len(config.get("timeseries_identifiers")) == 0:
-                is_long_format_valid = False
-            self.add_param(
-                    name="long_format",
-                    value=long_format,
-                    checks=[{"type": "custom",
-                             "cond": is_long_format_valid,
-                             "err_msg": "Long format is selected but no time series identifiers were provided"
-                             }],
-                    required=True
-                )
+        is_long_format_valid = True
+        if len(config.get("timeseries_identifiers")) == 0:
+            is_long_format_valid = False
+        self.add_param(
+            name="long_format",
+            value=long_format,
+            checks=[{"type": "custom",
+                     "cond": is_long_format_valid,
+                     "err_msg": "Long format is selected but no time series identifiers were provided"
+                     }]
+        )
 
         self.add_param(
             name="timeseries_identifiers",
@@ -147,7 +145,7 @@ class TransformationConfig(DkuConfig):
             checks=[
                 {
                     "type": "is_type",
-                    "op":int
+                    "op": int
                 },
                 {
                     "type": "sup_eq",
@@ -168,7 +166,7 @@ class TransformationConfig(DkuConfig):
         negative_column = ""
         input_dataset = self.input_dataset.get_dataframe()
         if model_stl == "multiplicative":
-            for target_colum in self.target_columns :
+            for target_colum in self.target_columns:
                 target_values = input_dataset[target_colum].values
                 if np.any(target_values <= 0):
                     valid_model = False
@@ -189,6 +187,109 @@ class TransformationConfig(DkuConfig):
                     "err_msg": f"The targeted column {negative_column} contains negative values, yet, a multiplicative STL model only works with positive time series. You may choose an additive STL model or a classic decomposition method instead. "
                 }
             ],
+            required=True
         )
 
+        self.add_param(
+            name="expert_stl",
+            value=config.get("expert_stl", False),
+            checks=[
+                {
+                    "type": "is_type",
+                    "op": bool
+                }
+            ],
+            required=True
+        )
 
+        if self.expert_stl:
+            self._load_STL_advanced_parameters(config)
+
+    def _load_STL_advanced_parameters(self, config):
+        self.add_param(
+            name="robust_stl",
+            value=config.get("robust_stl", False),
+            checks=[
+                {
+                    "type": "is_type",
+                    "op": bool
+                }
+            ],
+            required=False
+        )
+
+        degree_kwargs = config.get("stl_degree_kwargs", {})
+        self.add_param(
+            name="loess_degrees",
+            value=degree_kwargs,
+            checks=[
+                {
+                    "type": "is_type",
+                    "op": dict
+                },
+                {
+                    "type": "custom",
+                    "cond": all(
+                        x in ["seasonal_deg", "trend_deg", "low_pass_deg", ""] for x in degree_kwargs.keys()),
+                    "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_jump, trend_jump,low_pass_jump]"
+                },
+                {
+                    "type": "custom",
+                    "cond": all(x in ["0", "1", ""] for x in degree_kwargs.values()),
+                    "err_msg": "This field is invalid. The degrees used for Loess estimation should be equal to 0 and 1"
+                }
+            ],
+            required=False
+        )
+
+        speed_up_kwargs = config.get("stl_speed_jump_kwargs", {})
+
+        self.add_param(
+            name="speed_jumps",
+            value=speed_up_kwargs,
+            checks=[
+                {
+                    "type": "is_type",
+                    "op": dict
+                },
+                {
+                    "type": "custom",
+                    "cond": all(
+                        x in ["seasonal_jump", "trend_jump", "low_pass_jump", ""] for x in speed_up_kwargs.keys()),
+                    "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_jump, trend_jump,low_pass_jump]"
+                },
+                {
+                    "type": "custom",
+                    "cond": all((x.isnumeric() and float(x).is_integer() and float(x) >= 0) or (x == "") for x in
+                                speed_up_kwargs.values()),
+                    "err_msg": "This field is invalid. The values should be positive integers."
+                }
+            ],
+            required=False
+        )
+
+        additional_smoothers = config.get("stl_smoothers_kwargs", {})
+
+        self.add_param(
+            name="additional_smoothers",
+            value=additional_smoothers,
+            checks=[
+                {
+                    "type": "is_type",
+                    "op": dict
+                },
+                {
+                    "type": "custom",
+                    "cond": all(
+                        x in ["trend", "low_pass", ""] for x in additional_smoothers.keys()),
+                    "err_msg": "This field is invalid. The keys should be in the following iterable: [trend, low_pass]"
+                },
+                {
+                    "type": "custom",
+                    "cond": all((x.isnumeric() and float(x).is_integer() and int(x) % 2 != 1) or (x == "") for x in
+                                additional_smoothers.values()),
+                    "err_msg": "This field is invalid. The values should be odd positive integers."
+                }
+            ],
+            required=False
+        )
