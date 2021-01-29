@@ -84,11 +84,7 @@ class TransformationConfig(DkuConfig):
         self.add_param(
             name="target_columns",
             value=config.get("target_columns"),
-            checks=[{"type": "custom",
-                     "cond": (config.get("target_columns") != []),
-                     "err_msg": "This field is required"
-                     },
-                    {"type": "is_type",
+            checks=[{"type": "is_type",
                      "op": list
                      },
                     {"type": "in",
@@ -116,19 +112,19 @@ class TransformationConfig(DkuConfig):
         )
 
         long_format = config.get("additional_columns", False)
-        is_long_format_valid = True
-        if long_format and len(config.get("timeseries_identifiers")) == 0:
-            is_long_format_valid = False
-
-        self.add_param(
-            name="long_format",
-            value=long_format,
-            checks=[{"type": "custom",
-                     "cond": is_long_format_valid,
-                     "err_msg": "Long format is selected but no time series identifiers were provided"
-                     }],
-            required=False
-        )
+        if long_format:
+            is_long_format_valid = True
+            if len(config.get("timeseries_identifiers")) == 0:
+                is_long_format_valid = False
+            self.add_param(
+                    name="long_format",
+                    value=long_format,
+                    checks=[{"type": "custom",
+                             "cond": is_long_format_valid,
+                             "err_msg": "Long format is selected but no time series identifiers were provided"
+                             }],
+                    required=True
+                )
 
         self.add_param(
             name="timeseries_identifiers",
@@ -162,7 +158,8 @@ class TransformationConfig(DkuConfig):
                     "type": "custom",
                     "cond": seasonal % 2 == 1,
                     "err_msg": "The seasonal smoother should be an odd integer."
-                }]
+                }],
+            required=True
         )
 
         model_stl = config.get("model_stl")
