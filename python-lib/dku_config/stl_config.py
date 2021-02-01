@@ -1,7 +1,6 @@
 import numpy as np
 
 from dku_config.transformation_config import TransformationConfig
-from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
 
 
 class STLConfig(TransformationConfig):
@@ -12,7 +11,7 @@ class STLConfig(TransformationConfig):
         super().add_parameters(config)
         input_df = self.input_dataset.get_dataframe()
         self.load_settings(config, input_df)
-        if self.get_param("advanced"):
+        if self.advanced:
             self.load_advanced_parameters(config)
 
     def load_settings(self, config, input_df=None, *args, **kwargs):
@@ -77,7 +76,7 @@ class STLConfig(TransformationConfig):
                 {
                     "type": "custom",
                     "cond": valid_model,
-                    "err_msg": f"The targeted column {negative_column} contains negative values, yet, a multiplicative STL model only works with positive time series. You may choose an additive STL model or a classic decomposition method instead. "
+                    "err_msg": f"{negative_column}, the targeted column contains negative values, yet, a multiplicative STL model only works with positive time series. You may choose an additive STL model or a classic decomposition method instead. "
                 }
             ],
             required=True
@@ -121,7 +120,7 @@ class STLConfig(TransformationConfig):
                     "type": "custom",
                     "cond": all(
                         x in ["seasonal_deg", "trend_deg", "low_pass_deg", ""] for x in degree_kwargs.keys()),
-                    "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_jump, trend_jump,low_pass_jump]"
+                    "err_msg": "This field is invalid. The keys should be in the following iterable: [seasonal_deg, trend_deg,low_pass_deg]"
                 },
                 {
                     "type": "custom",
