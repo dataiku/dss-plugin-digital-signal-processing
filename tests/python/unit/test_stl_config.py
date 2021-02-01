@@ -62,3 +62,13 @@ class TestSTLConfig:
         config["stl_degree_kwargs"]["seasonal_deg"] = "2"
         with pytest.raises(DSSParameterError):
             _ = dku_config.load_advanced_parameters(config)
+        config["stl_degree_kwargs"]["seasonal_deg"] = "1"
+
+        config["stl_smoothers_kwargs"]["wrong_field"] = "3"
+        with pytest.raises(DSSParameterError):
+            _ = dku_config.load_advanced_parameters(config)
+
+        config["stl_smoothers_kwargs"].pop("wrong_field")
+        config["stl_smoothers_kwargs"]["trend"] = "12"
+        with pytest.raises(DSSParameterError):
+            _ = dku_config.load_advanced_parameters(config)
