@@ -197,7 +197,7 @@
             "mandatory": true
         },
          {
-            "name": "additional_columns",
+            "name": "long_format",
             "label": "Long format",
             "description": "If multiple time series are stored in the same column",
             "type": "BOOLEAN",
@@ -219,7 +219,7 @@
             ],
             "columnRole": "input_dataset",
             "mandatory": false,
-            "visibilityCondition": "model.additional_columns"
+            "visibilityCondition": "model.long_format"
         },
         {
             "type": "SEPARATOR",
@@ -313,9 +313,9 @@
             "visibilityCondition": "model.time_decomposition_method == 'STL' && model.expert_stl",
             "mandatory": false,
             "defaultValue": {
-                "seasonal_jump": "",
-                "trend_jump": "",
-                "low_pass_jump": ""
+                "seasonal_jump": "1",
+                "trend_jump": "1",
+                "low_pass_jump": "1"
             }
         },
         {

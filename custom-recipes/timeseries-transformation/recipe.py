@@ -1,13 +1,16 @@
 from dataiku.customrecipe import get_recipe_config
 
-from dku_config.transformation_config import TransformationConfig
+from dku_config.stl_config import STLConfig
 from timeseries_transformation.preparation import TimeseriesPreparator
 from timeseries_transformation.stl_decomposition import STLDecomposition
 
 config = get_recipe_config()
-dku_config = TransformationConfig(config)
-input_df = dku_config.input_dataset.get_dataframe()
+if config.get("transformation_type") == "seasonal_decomposition":
+    if config.get("time_decomposition_method") == "STL":
+        dku_config = STLConfig()
+dku_config.add_parameters(config)
 
+input_df = dku_config.input_dataset.get_dataframe()
 timeseries_preparator = TimeseriesPreparator(
     time_column_name=dku_config.time_column,
     frequency=dku_config.frequency,
