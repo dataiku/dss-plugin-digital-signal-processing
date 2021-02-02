@@ -28,6 +28,18 @@ class TimeseriesDecomposition(ABC):
             decomposed_df = self._write_decomposition(decomposition, df, target_column)
         return decomposed_df
 
+    def _get_indexes_for_long_ts(self, df):
+        identifiers = []
+        for identifier_name in self.config.timeseries_identifiers:
+            identifiers.append(df[identifier_name].unique())
+        ts_indexes = []
+        for combination in itertools.product(*identifiers):
+            ts_df = df
+            for i, column in enumerate(self.config.timeseries_identifiers):
+                ts_df = ts_df.query(f"{column}=={combination[i]}")
+            ts_indexes.append(ts_df.index)
+        return ts_indexes
+
     def _prepare_ts(self,target_values,time_index):
         return pd.Series(target_values, index=time_index)
 
@@ -41,16 +53,5 @@ class TimeseriesDecomposition(ABC):
         df["{}_residuals_0".format(target_column)] = decomposition.resid.values
         return df
 
-    def _get_indexes_for_long_ts(self, df):
-        identifiers = []
-        for identifier_name in self.config.timeseries_identifiers:
-            identifiers.append(df[identifier_name].unique())
-        ts_indexes = []
-        for combination in itertools.product(*identifiers):
-            ts_df = df
-            for i, column in enumerate(self.config.timeseries_identifiers):
-                ts_df = ts_df.query(f"{column}=={combination[i]}")
-            ts_indexes.append(ts_df.index)
-        return ts_indexes
 
 
