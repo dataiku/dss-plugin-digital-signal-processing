@@ -1,19 +1,11 @@
 import json
-import numpy as np
 
-from dku_config.transformation_config import TransformationConfig
+from dku_config.decomposition_config import DecompositionConfig
 
 
-class ClassicalConfig(TransformationConfig):
+class ClassicalConfig(DecompositionConfig):
     def __init__(self):
         super().__init__()
-
-    def add_parameters(self, config):
-        super().add_parameters(config)
-        input_df = self.input_dataset.get_dataframe()
-        self.load_settings(config, input_df)
-        if self.advanced:
-            self.load_advanced_parameters(config)
 
     def load_settings(self, config, input_df=None, *args, **kwargs):
         super(ClassicalConfig, self).load_settings(config, input_df, *args, **kwargs)

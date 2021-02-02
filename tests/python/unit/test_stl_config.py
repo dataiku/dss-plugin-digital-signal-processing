@@ -49,8 +49,6 @@ class TestSTLConfig:
                   "stl_degree_kwargs": {"seasonal_deg": "1", "trend_deg": "", "low_pass_deg": "1"},
                   "stl_speed_jump_kwargs": {"seasonal_jump": '', "trend_jump": "12", "low_pass_jump": ''},
                   "stl_smoothers_kwargs": {"trend": "13", "low_pass": ''}}
-        input_dataset_columns = ["date", "target"]
-        dku_config.load_input_parameters(config, input_dataset_columns)
 
         assert dku_config.load_advanced_parameters(config) is None
 
