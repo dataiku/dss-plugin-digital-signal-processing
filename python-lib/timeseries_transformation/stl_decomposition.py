@@ -28,11 +28,11 @@ def format_parameters(config):
     parameters = {"seasonal": config.seasonal}
     if config.advanced:
         parameters["robust"] = config.robust_stl
-        if config.get_param("loess_degrees"):
+        if config.loess_degrees:
             parameters["seasonal_deg"] = int(config.loess_degrees.get("seasonal_deg") or 1)
             parameters["trend_deg"] = int(config.loess_degrees.get("trend_deg") or 1)
             parameters["low_pass_deg"] = int(config.loess_degrees.get("low_pass_deg") or 1)
-        if config.get_param("speed_jumps"):
+        if config.speed_jumps:
             parameters["seasonal_jump"] = int(config.speed_jumps.get("seasonal_jump") or 1)
             parameters["trend_jump"] = int(config.speed_jumps.get("trend_jump") or 1)
             parameters["low_pass_jump"] = int(config.speed_jumps.get("low_pass_jump") or 1)

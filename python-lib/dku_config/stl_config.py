@@ -76,7 +76,7 @@ class STLConfig(TransformationConfig):
                 {
                     "type": "custom",
                     "cond": valid_model,
-                    "err_msg": f"{negative_column}, the targeted column contains negative values, yet, a multiplicative STL model only works with positive time series. You may choose an additive STL model or a classic decomposition method instead. "
+                    "err_msg": f"{negative_column}, the targeted column contains negative values, yet, a multiplicative STL model only works with positive time series. You may choose an additive model instead. "
                 }
             ],
             required=True
