@@ -53,21 +53,11 @@ class STLConfig(TransformationConfig):
             required=True
         )
 
-        model_stl = config.get("model_stl")
-
-        valid_model = True
-        negative_column = ""
-        if model_stl == "multiplicative":
-            for target_column in self.target_columns:
-                target_values = input_df[target_column].values
-                if np.any(target_values <= 0):
-                    valid_model = False
-                    negative_column = target_column
-                    break
-
+        model = config.get("model_stl","additive")
+        multiplicative_check = self._check_multiplicative_model(model, input_df)
         self.add_param(
             name="model_stl",
-            value=config.get("model_stl"),
+            value=model,
             checks=[
                 {
                     "type": "in",
@@ -75,8 +65,8 @@ class STLConfig(TransformationConfig):
                 },
                 {
                     "type": "custom",
-                    "cond": valid_model,
-                    "err_msg": f"{negative_column}, the targeted column contains negative values, yet, a multiplicative STL model only works with positive time series. You may choose an additive model instead. "
+                    "cond": multiplicative_check.valid_model,
+                    "err_msg": f"{multiplicative_check.negative_column}, a targeted column contains negative values. Yet, a multiplicative STL model only works with positive time series. You may choose an additive model instead. "
                 }
             ],
             required=True

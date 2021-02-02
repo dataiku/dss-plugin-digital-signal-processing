@@ -1,4 +1,6 @@
 import json
+import numpy as np
+
 from dku_config.transformation_config import TransformationConfig
 
 
@@ -8,11 +10,13 @@ class ClassicalConfig(TransformationConfig):
 
     def add_parameters(self, config):
         super().add_parameters(config)
-        self.load_settings(config)
+        input_df = self.input_dataset.get_dataframe()
+        self.load_settings(config, input_df)
         if self.advanced:
             self.load_advanced_parameters(config)
 
-    def load_settings(self, config, *args, **kwargs):
+    def load_settings(self, config, input_df=None, *args, **kwargs):
+        super(ClassicalConfig, self).load_settings(config, input_df, *args, **kwargs)
         self.add_param(
             name="transformation_type",
             value=config.get("transformation_type"),
@@ -25,14 +29,22 @@ class ClassicalConfig(TransformationConfig):
             required=True
         )
 
+        model = config.get("classical_model", "additive")
+        multiplicative_check = self._check_multiplicative_model(model, input_df)
         self.add_param(
             name="model",
-            value=config.get("classical_model", "additive"),
+            value=model,
             checks=[
                 {
                     "type": "in",
                     "op": ["additive", "multiplicative"]
-                }],
+                },
+                {
+                    "type": "custom",
+                    "cond": multiplicative_check.valid_model,
+                    "err_msg": f"{multiplicative_check.negative_column}, a targeted column contains negative values. Yet, a multiplicative STL model only works with positive time series. You may choose an additive model instead. "
+                }
+            ],
             required=True
         )
 
@@ -117,7 +129,7 @@ class ClassicalConfig(TransformationConfig):
                         "cond": valid_extrapolate,
                         "err_msg": "Extrapolate trend should be a positive integer or equal to 'freq'"
 
-                     }
+                    }
                 ],
                 required=False
             )

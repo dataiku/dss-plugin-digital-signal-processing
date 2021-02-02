@@ -4,6 +4,7 @@ import dataiku
 from dataiku.customrecipe import get_input_names_for_role, get_output_names_for_role
 
 from dku_config.dku_config import DkuConfig
+from dku_config.utils import MultiplicativeCheck
 
 
 class TransformationConfig(DkuConfig):
@@ -124,9 +125,18 @@ class TransformationConfig(DkuConfig):
                 value=[]
             )
 
-
     def load_settings(self, config, *args, **kwargs):
         pass
 
     def advanced_parameters(self, config):
         pass
+
+    def _check_multiplicative_model(self, model, input_df):
+        if model == "multiplicative":
+            for target_column in self.target_columns:
+                target_values = input_df[target_column].values
+                if np.any(target_values <= 0):
+                    return MultiplicativeCheck(False, target_column)
+            return MultiplicativeCheck(True)
+        else:
+            return MultiplicativeCheck(True)
